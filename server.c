@@ -51,31 +51,35 @@ int main(int argc, char* argv[]){
 //bind to a specific port
 	int bindStatus = bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen);
 
-//listen 
-	int listenStatus = listen(sockfd, BACKLOG);
 
-//accept and communicate
+	while (1){
+	//listen 
+		int listenStatus = listen(sockfd, BACKLOG);
+		printf("\n **Listening for new messages** \n\n");  
 
-	int recieveBytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,(struct sockaddr *)&their_addr, &addr_len);
-	buf[recieveBytes] = '\0';	
+	//accept and communicate
 
-	char* messageToSend = "";
-	if (!strcmp(buf,"ftp")){
-		messageToSend = "yes";		
-	}else{
-		messageToSend = "no";
+		int recieveBytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,(struct sockaddr *)&their_addr, &addr_len);
+		buf[recieveBytes] = '\0';	
+
+		char* messageToSend = "";
+		if (!strcmp(buf,"ftp")){
+			messageToSend = "yes";		
+		}else{
+			messageToSend = "no";
+		}
+		int sendBytes = sendto(sockfd, messageToSend, strlen(messageToSend),0,(struct sockaddr *)&their_addr, addr_len);
+
+		printf("getAddrInfoStatus: %d \n", rv);
+		printf("socket descriptor: %d \n", sockfd);
+		printf("bindStatus: %d \n", bindStatus);
+		printf("listenStatus: %d \n", listenStatus);
+		printf("recieveBytes: %d \n", recieveBytes);
+		printf("sendBytes: %d \n", sendBytes);
+		printf("message recieved: %s \n", buf); 
+		printf("message sent: %s \n", messageToSend);
+
 	}
-	int sendBytes = sendto(sockfd, messageToSend, strlen(messageToSend),0,(struct sockaddr *)&their_addr, addr_len);
-
-	printf("getAddrInfoStatus: %d \n", rv);
-	printf("socket descriptor: %d \n", sockfd);
-	printf("bindStatus: %d \n", bindStatus);
-	printf("listenStatus: %d \n", listenStatus);
-	printf("recieveBytes: %d \n", recieveBytes);
-	printf("sendBytes: %d \n", sendBytes);
-	printf("message recieved: %s \n", buf); 
-	printf("message sent: %s \n", messageToSend); 
-
 
 	close(sockfd);
 	return 0;
