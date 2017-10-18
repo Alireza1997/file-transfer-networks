@@ -14,9 +14,12 @@
 
 #define MYPORT "4950"   // the port users will be connecting to
 #define BACKLOG 10
-#define MAXBUFLEN 100
+#define MAXBUFLEN 10000
 
+//======== prototypes ========//
+void processPacket(int *totalFrag,int *frag_no,int *size,	char *filename,	char *data, char *buf);
 
+//======== main ========//
 int main(int argc, char* argv[]){
 
 	char* UDP_listen_port = argv[1];
@@ -79,37 +82,89 @@ int main(int argc, char* argv[]){
 		printf("message recieved: %s \n", buf); 
 		printf("message sent: %s \n\n", messageToSend);
 
+		//======== proceed to file reception ========//
 		if (!strcmp(messageToSend,"yes")){
-			int totalFrag = 0, frag_no = 0;			
+					
 			do{
+				int totalFrag = 0, frag_no = 0, size = 0;
+				char filename[100];
+				char data[2000];	
+
+				//printf("hi");
 				recieveBytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,(struct sockaddr *)&their_addr, &addr_len);
-
-				totalFrag = 0;
-				int i;
-				for (i = 0; buf[i]!= ':'; i++){
-					totalFrag *=10;
-					totalFrag += buf[i] - '0';
-				}
-				for (i = i+1; buf[i]!= ':'; i++){
-					frag_no *=10;
-					frag_no += buf[i] - '0';
-				}
-				
-
-				
+				//printf("hi");
+				processPacket(&totalFrag, &frag_no, &size, filename,data,buf);
+				//printf("hi");
+			
 				messageToSend = "ACK";			
 				sendBytes = sendto(sockfd, messageToSend, strlen(messageToSend),0,(struct sockaddr *)&their_addr, addr_len);
+
 				printf("totalFrag: %d \n", totalFrag);
 				printf("frag_no: %d \n", frag_no);
+				printf("size: %d \n", size);
+				printf("filename: %s \n", filename);
+				//printf("data: %s \n", data);
 				printf("recieveBytes: %d \n", recieveBytes);
 				printf("sendBytes: %d \n", sendBytes);
-				printf("message recieved: %s \n", buf); 
-				printf("message sent: %s \n", messageToSend);
-			}while(totalFrag!=frag_no);
-
+				//printf("message recieved: %s \n", buf); 
+				//printf("message sent: %s \n", messageToSend);
+				//printf("1 message processed");
+				if (totalFrag == frag_no) break;
+			}while(1);
+			//printf("hiasdasd");
 		}
 	}
 
 	close(sockfd);
 	return 0;
 }
+
+//======== helper functions ========//
+void processPacket(int *totalFrag,int *frag_no,int *size,	char *filename,	char *data , char *buf){
+	int i, j = 0;
+	for (i = 0; buf[i]!= ':'; i++){
+		*totalFrag *=10;
+		*totalFrag += buf[i] - '0';
+	}
+	for (i = i+1; buf[i]!= ':'; i++){
+		*frag_no *=10;
+		*frag_no += buf[i] - '0';
+	}
+	for (i = i+1; buf[i]!= ':'; i++){
+		*size *=10;
+		*size += buf[i] - '0';
+	}j = i;
+	for (i = i+1; buf[i]!= ':'; i++){
+		filename[i-j-1] = buf[i]; 				
+		//printf("%s \n", filename);
+	}
+	filename[i-j-1] = '\0';
+	j = i;
+	for (i = i+1; i-j != *size; i++){
+		data[i-j-1] = buf[i]; 				
+		//printf("%s \n", data);
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

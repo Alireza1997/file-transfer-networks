@@ -133,15 +133,15 @@ int main(int argc, char *argv[])
 		
 	//======== file transfer ========//
 	for (int i = 0; i < totalFrag; i++){
-		int* length;
-		char packetInfo[3000];
-		processPacket(packets[0],length,packetInfo);
-		printf ("%d %d %s\n", *length, packets[0].size, packetInfo);
-		*length = *length + packets[0].size;
+		int length;
+		char packetInfo[3000] = "";
+		processPacket(packets[i],&length,packetInfo);
+		printf ("%d %d %s\n", length, packets[i].size, packetInfo);
+		length = length + packets[i].size;
 
-		sendBytes= sendto(sockDescriptor, packetInfo, *length ,0,res->ai_addr, res->ai_addrlen);
+		sendBytes= sendto(sockDescriptor, packetInfo, length ,0,res->ai_addr, res->ai_addrlen);
 		printf("sendBytes: %d \n", sendBytes);
-		printf("message sent: %s \n", messageToSend); 
+		//printf("message sent: %s \n", messageToSend); 
 		
 		int recieveBytes=recvfrom(sockDescriptor, buf,sizeof (buf) , 0, (struct sockaddr *)&recieving_addr, &addr_length);
 		buf[recieveBytes] = '\0';
@@ -167,8 +167,8 @@ int main(int argc, char *argv[])
 //======== helper functions ========//
 char* readFile(FILE *file, unsigned char* buffer){	
 	fread(buffer,1000,1,file);
-	for(int i = 0; i<1000; i++)
-    	printf("%u ", buffer[i]);
+	//for(int i = 0; i<1000; i++)
+    //	printf("%u ", buffer[i]);
 	return buffer;
 }
 
@@ -180,41 +180,28 @@ int getFileSize(FILE *file){
 }
 
 char* processPacket(struct packet pack, int* length , char* packetInfo){
-	//char* packetInfo[] = "";
+
 	char buffer [200];
-	//printf("%d\n",pack.total_frag);
 	sprintf(buffer,"%d:",pack.total_frag);
-	//printf("%s\n", buffer);
 	strcat(packetInfo, buffer);
-	//printf("%s\n", packetInfo);
 
-	//printf("%d\n",pack.frag_no);
+
 	sprintf(buffer,"%d:",pack.frag_no);
-	//printf("%s\n", buffer);
 	strcat(packetInfo, buffer);
-	//printf("%s\n", packetInfo);
 
-	//printf("%d\n",pack.size);
+
 	sprintf(buffer,"%d:",pack.size);
-	//printf("%s\n", buffer);
 	strcat(packetInfo, buffer);
-	//printf("%s\n", packetInfo);
 
-	//printf("%s\n", pack.filename);
 	strcat(packetInfo, pack.filename);	strcat(packetInfo, ":");
-	printf("%s\n", packetInfo);
 
-	//printf("%s\n", pack.filedata);
 	*length = strlen(packetInfo);	
-	//printf("%d\n", *length);	
+
 	for (int i = 0; i < pack.size; i++){
-		//printf("%c\n", pack.filedata[i]);
 		sprintf(buffer,"%c",pack.filedata[i]);
-		//printf("%u\n", buffer[0]);
 		strcat(packetInfo, buffer);
-		//printf("%s\n", packetInfo);
 	}
-	//printf("%s\n", packetInfo);
+
 
 	return packetInfo;
 
