@@ -27,7 +27,7 @@ struct packet {
 
 int getFileSize(FILE *file);
 char* readFile(FILE *file, unsigned char* buffer);
-char* processPacket(struct packet pack);
+char* processPacket(struct packet pack, int* length, char* packetInfo);
 
 
 //======== main ========//
@@ -130,12 +130,23 @@ int main(int argc, char *argv[])
 		printf("A file transfer can start \n");
 	}
 
+		
 	//======== file transfer ========//
 	for (int i = 0; i < totalFrag; i++){
-		char* packetInfo = processPacket(packets[i]);		
-		int sendBytes= sendto(sockDescriptor, packetInfo, strlen(packetInfo),0,res->ai_addr, res->ai_addrlen);
+		int* length;
+		char packetInfo[3000];
+		processPacket(packets[0],length,packetInfo);
+		printf ("%d %d %s\n", *length, packets[0].size, packetInfo);
+		*length = *length + packets[0].size;
+
+		sendBytes= sendto(sockDescriptor, packetInfo, *length ,0,res->ai_addr, res->ai_addrlen);
+		printf("sendBytes: %d \n", sendBytes);
+		printf("message sent: %s \n", messageToSend); 
+		
 		int recieveBytes=recvfrom(sockDescriptor, buf,sizeof (buf) , 0, (struct sockaddr *)&recieving_addr, &addr_length);
 		buf[recieveBytes] = '\0';
+		printf("recieveBytes: %d \n", recieveBytes);
+		printf("message recieved: %s \n", buf);
 		if (strcmp(buf,"ACK") < 0){
 			break;
 		}
@@ -143,7 +154,7 @@ int main(int argc, char *argv[])
 
 
 
-
+	printf ("hi\n");
 
 
 
@@ -168,8 +179,8 @@ int getFileSize(FILE *file){
 	return fileSize;
 }
 
-char* processPacket(struct packet pack){
-	char packetInfo[3000] = "";
+char* processPacket(struct packet pack, int* length , char* packetInfo){
+	//char* packetInfo[] = "";
 	char buffer [200];
 	//printf("%d\n",pack.total_frag);
 	sprintf(buffer,"%d:",pack.total_frag);
@@ -194,7 +205,8 @@ char* processPacket(struct packet pack){
 	printf("%s\n", packetInfo);
 
 	//printf("%s\n", pack.filedata);
-
+	*length = strlen(packetInfo);	
+	//printf("%d\n", *length);	
 	for (int i = 0; i < pack.size; i++){
 		//printf("%c\n", pack.filedata[i]);
 		sprintf(buffer,"%c",pack.filedata[i]);
@@ -202,7 +214,10 @@ char* processPacket(struct packet pack){
 		strcat(packetInfo, buffer);
 		//printf("%s\n", packetInfo);
 	}
-	printf("%s\n", packetInfo);
+	//printf("%s\n", packetInfo);
+
+	return packetInfo;
+
 }
 
 

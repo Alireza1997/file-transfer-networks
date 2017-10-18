@@ -77,8 +77,37 @@ int main(int argc, char* argv[]){
 		printf("recieveBytes: %d \n", recieveBytes);
 		printf("sendBytes: %d \n", sendBytes);
 		printf("message recieved: %s \n", buf); 
-		printf("message sent: %s \n", messageToSend);
+		printf("message sent: %s \n\n", messageToSend);
 
+		if (!strcmp(messageToSend,"yes")){
+			int totalFrag = 0, frag_no = 0;			
+			do{
+				recieveBytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,(struct sockaddr *)&their_addr, &addr_len);
+
+				totalFrag = 0;
+				int i;
+				for (i = 0; buf[i]!= ':'; i++){
+					totalFrag *=10;
+					totalFrag += buf[i] - '0';
+				}
+				for (i = i+1; buf[i]!= ':'; i++){
+					frag_no *=10;
+					frag_no += buf[i] - '0';
+				}
+				
+
+				
+				messageToSend = "ACK";			
+				sendBytes = sendto(sockfd, messageToSend, strlen(messageToSend),0,(struct sockaddr *)&their_addr, addr_len);
+				printf("totalFrag: %d \n", totalFrag);
+				printf("frag_no: %d \n", frag_no);
+				printf("recieveBytes: %d \n", recieveBytes);
+				printf("sendBytes: %d \n", sendBytes);
+				printf("message recieved: %s \n", buf); 
+				printf("message sent: %s \n", messageToSend);
+			}while(totalFrag!=frag_no);
+
+		}
 	}
 
 	close(sockfd);
