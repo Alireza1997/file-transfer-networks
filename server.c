@@ -18,6 +18,7 @@
 
 //======== prototypes ========//
 void processPacket(int *totalFrag,int *frag_no,int *size,	char *filename,	char *data, char *buf);
+void writeToFile(int size,char *fileName, char *data);
 
 //======== main ========//
 int main(int argc, char* argv[]){
@@ -90,28 +91,25 @@ int main(int argc, char* argv[]){
 				char filename[100];
 				char data[2000];	
 
-				//printf("hi");
 				recieveBytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,(struct sockaddr *)&their_addr, &addr_len);
-				//printf("hi");
+
 				processPacket(&totalFrag, &frag_no, &size, filename,data,buf);
-				//printf("hi");
 			
 				messageToSend = "ACK";			
 				sendBytes = sendto(sockfd, messageToSend, strlen(messageToSend),0,(struct sockaddr *)&their_addr, addr_len);
-
+				
+				writeToFile(size,filename,data);
+				
 				printf("totalFrag: %d \n", totalFrag);
 				printf("frag_no: %d \n", frag_no);
 				printf("size: %d \n", size);
 				printf("filename: %s \n", filename);
-				//printf("data: %s \n", data);
 				printf("recieveBytes: %d \n", recieveBytes);
 				printf("sendBytes: %d \n", sendBytes);
-				//printf("message recieved: %s \n", buf); 
-				//printf("message sent: %s \n", messageToSend);
-				//printf("1 message processed");
+
 				if (totalFrag == frag_no) break;
 			}while(1);
-			//printf("hiasdasd");
+
 		}
 	}
 
@@ -140,11 +138,20 @@ void processPacket(int *totalFrag,int *frag_no,int *size,	char *filename,	char *
 	}
 	filename[i-j-1] = '\0';
 	j = i;
-	for (i = i+1; i-j != *size; i++){
+	for (i = i+1; i-j <= *size; i++){
 		data[i-j-1] = buf[i]; 				
-		//printf("%s \n", data);
+		printf("%u \n", buf[i]);
 	}
 
+}
+void writeToFile(int size,char *fileName,char *data){
+	
+	char newFileName[] = "copy-";
+	strcat(newFileName,fileName);
+	FILE *file=fopen(newFileName,"wb");
+	fwrite(data,size,1,file);
+	fclose(file);
+	
 }
 
 
