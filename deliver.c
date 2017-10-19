@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 char* readFile(FILE *file, unsigned char* buffer){	
 	fread(buffer,1000,1,file);
 	//for(int i = 0; i<1000; i++)
-    //	printf("%u ", buffer[i]);
+    	//printf("%u ", buffer[i]);
 	return buffer;
 }
 
@@ -193,13 +193,15 @@ char* processPacket(struct packet pack, int* length , char* packetInfo){
 	sprintf(buffer,"%d:",pack.size);
 	strcat(packetInfo, buffer);
 
-	strcat(packetInfo, pack.filename);	strcat(packetInfo, ":");
+	strcat(packetInfo, pack.filename);	
+	strcat(packetInfo, ":");
 
 	*length = strlen(packetInfo);	
 
 	for (int i = 0; i < pack.size; i++){
-		sprintf(buffer,"%c",pack.filedata[i]);
-		strcat(packetInfo, buffer);
+		//sprintf(buffer,"%c",pack.filedata[i]);
+		//strcat(packetInfo, buffer);
+		packetInfo[*length + i] = pack.filedata[i];
 	}
 
 

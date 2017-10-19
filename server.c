@@ -85,31 +85,40 @@ int main(int argc, char* argv[]){
 
 		//======== proceed to file reception ========//
 		if (!strcmp(messageToSend,"yes")){
-					
+			char newFileName[] = "copy-";
+			FILE *file;
 			do{
 				int totalFrag = 0, frag_no = 0, size = 0;
 				char filename[100];
 				char data[2000];	
-
+				
 				recieveBytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,(struct sockaddr *)&their_addr, &addr_len);
 
 				processPacket(&totalFrag, &frag_no, &size, filename,data,buf);
 			
 				messageToSend = "ACK";			
 				sendBytes = sendto(sockfd, messageToSend, strlen(messageToSend),0,(struct sockaddr *)&their_addr, addr_len);
-				
-				writeToFile(size,filename,data);
+				if (frag_no == 1){					
+					strcat(newFileName,filename);
+					file=fopen(newFileName,"wb");
+					fwrite(data,size,1,file);
+				}else{
+					fwrite(data,size,1,file);
+				}
+	
+				//writeToFile(file,size,filename,data);
 				
 				printf("totalFrag: %d \n", totalFrag);
 				printf("frag_no: %d \n", frag_no);
 				printf("size: %d \n", size);
 				printf("filename: %s \n", filename);
+				printf("newFileName: %s \n", newFileName);
 				printf("recieveBytes: %d \n", recieveBytes);
 				printf("sendBytes: %d \n", sendBytes);
 
 				if (totalFrag == frag_no) break;
 			}while(1);
-
+			fclose(file);
 		}
 	}
 
@@ -118,7 +127,7 @@ int main(int argc, char* argv[]){
 }
 
 //======== helper functions ========//
-void processPacket(int *totalFrag,int *frag_no,int *size,	char *filename,	char *data , char *buf){
+void processPacket(int *totalFrag,int *frag_no,int *size, char *filename,	char *data , char *buf){
 	int i, j = 0;
 	for (i = 0; buf[i]!= ':'; i++){
 		*totalFrag *=10;
@@ -140,11 +149,11 @@ void processPacket(int *totalFrag,int *frag_no,int *size,	char *filename,	char *
 	j = i;
 	for (i = i+1; i-j <= *size; i++){
 		data[i-j-1] = buf[i]; 				
-		printf("%u \n", buf[i]);
+		//printf("%u \n", buf[i]);
 	}
 
-}
-void writeToFile(int size,char *fileName,char *data){
+}/*
+void writeToFile(FILE *fileint, size,char *fileName,char *data){
 	
 	char newFileName[] = "copy-";
 	strcat(newFileName,fileName);
@@ -152,7 +161,7 @@ void writeToFile(int size,char *fileName,char *data){
 	fwrite(data,size,1,file);
 	fclose(file);
 	
-}
+}*/
 
 
 
