@@ -25,6 +25,8 @@ struct packet {
 	char filedata[1000];
 };
 
+
+
 int getFileSize(FILE *file);
 char* readFile(FILE *file, unsigned char* buffer);
 char* processPacket(struct packet pack, int* length, char* packetInfo);
@@ -141,14 +143,23 @@ int main(int argc, char *argv[])
 
 		sendBytes= sendto(sockDescriptor, packetInfo, length ,0,res->ai_addr, res->ai_addrlen);
 		printf("sendBytes: %d \n", sendBytes);
-		//printf("message sent: %s \n", messageToSend); 
+
+		//======== ACK handling ========//
+
+		struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 1;
+		setsockopt(sockDescriptor, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
 		
 		int recieveBytes=recvfrom(sockDescriptor, buf,sizeof (buf) , 0, (struct sockaddr *)&recieving_addr, &addr_length);
 		buf[recieveBytes] = '\0';
-		printf("recieveBytes: %d \n", recieveBytes);
-		printf("message recieved: %s \n", buf);
-		if (strcmp(buf,"ACK") < 0){
-			break;
+
+		if (recieveBytes >= 0 && strcmp(buf,"ACK") >= 0){
+			printf("recieveBytes: %d \n", recieveBytes);
+			printf("message recieved: %s \n", buf);
+		}else{
+			printf("ACK not recieved");
+			i--;
 		}
 	}	
 
