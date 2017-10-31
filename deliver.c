@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	printf("file name recieved: %s \n", fileName);
 
 	char buf[MAXBUFLEN];
-	struct addrinfo hints;
+	struct addrinfo hints; 
 	struct addrinfo *res;
 	struct sockaddr_storage recieving_addr;
 	socklen_t addr_length;
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 
 	int fileSize;
 	int totalFrag;
-
+ 
 	struct packet packets[300];
 	
 
