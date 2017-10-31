@@ -98,6 +98,7 @@ int main(int argc, char* argv[]){
 			
 				messageToSend = "ACK";			
 				sendBytes = sendto(sockfd, messageToSend, strlen(messageToSend),0,(struct sockaddr *)&their_addr, addr_len);
+				//======== write data to file ========//		
 				if (frag_no == 1){					
 					strcat(newFileName,filename);
 					file=fopen(newFileName,"wb");

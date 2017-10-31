@@ -189,7 +189,7 @@ char* processPacket(struct packet pack, int* length , char* packetInfo){
 	sprintf(buffer,"%d:",pack.frag_no);
 	strcat(packetInfo, buffer);
 
-
+ 
 	sprintf(buffer,"%d:",pack.size);
 	strcat(packetInfo, buffer);
 
